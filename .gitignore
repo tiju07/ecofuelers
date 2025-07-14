@@ -1,0 +1,30 @@
+# Python virtual environments
+EF/
+
+# Node.js modules
+frontend/node_modules/
+
+# SQLite database files
+*.db
+
+# Environment files
+.env
+
+# Build artifacts
+build/
+dist/
+
+# Python cache files
+__pycache__/
+*.pyc
+
+# IDE-specific files
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+backend/venv/
+
+venv/
