@@ -1,7 +1,7 @@
-// FILE: Navbar.tsx
 import React, { useEffect, useState } from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
+import { getCookie } from "src/context/Services";
 
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
@@ -17,19 +17,13 @@ const Navbar: React.FC = () => {
     const fetchUser = async () => {
       setLoading(true);
       try {
-        // const response = await axios.get(
-        //   "http://127.0.0.1:8000/auth/users/me",
-        //   { withCredentials: true }
-        // );
         const token = document.cookie
           .split('; ')
           .find(row => row.startsWith('access_token='))
           ?.split('=')[1];
-        console.log("Token:", token);
         if (token) {
           const decodedToken = JSON.parse(atob(token.split('.')[1]));
           if (token) setUser(decodedToken);
-          console.log(decodedToken);
         }
 
       } catch (err) {
@@ -93,7 +87,7 @@ const Navbar: React.FC = () => {
           >
             Dashboard
           </NavLink>
-          {user?.role === "admin" && (
+          {user && (
             <>
               <NavLink
                 to="/inventory"
@@ -133,7 +127,7 @@ const Navbar: React.FC = () => {
               </NavLink>
             </>
           )}
-          {user?.role === "employee" && (
+          {/* {user?.role === "employee" && (
             <>
               <NavLink
                 to="/inventory"
@@ -154,7 +148,7 @@ const Navbar: React.FC = () => {
                 Alerts
               </NavLink>
             </>
-          )}
+          )} */}
         </div>
         {/* Right: Auth Buttons */}
         <div className="flex items-center space-x-3">

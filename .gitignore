@@ -28,3 +28,7 @@ __pycache__/
 backend/venv/
 
 venv/
+
+node_modules/
+
+.git_old/

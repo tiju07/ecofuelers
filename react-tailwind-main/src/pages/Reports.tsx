@@ -1,89 +1,66 @@
-// FILE: Reports.tsx
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import axios from "axios";
 import ChartComponent from "../components/ChartComponent";
-import jsPDF from "jspdf";
+import { Button } from "@app/components/ui/button";
 
 const Reports: React.FC = () => {
-  const [usageData, setUsageData] = useState<any>(null);
-  const [savingsData, setSavingsData] = useState<any>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch usage history and savings data
-  const fetchData = async () => {
-    setLoading(true);
-    setError(null);
+  const downloadReport = async (format: "pdf" | "excel") => {
     try {
-      const [usageResponse, savingsResponse] = await Promise.all([
-        axios.get("/usage/history"),
-        axios.get("/savings"),
-      ]);
-      setUsageData(usageResponse.data);
-      setSavingsData(savingsResponse.data);
+      setLoading(true);
+      const response = await axios.get(`http://localhost:8000/inventory/reports/usage/export?format=${format}`, {
+        responseType: "blob", // to handle file download
+      });
+
+      const blob = new Blob([response.data], {
+        type: format === "pdf" ? "application/pdf" : "text/csv",
+      });
+
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `report.${format == "pdf" ? "pdf" : "xlsx"}`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
     } catch (err) {
-      setError("Failed to fetch report data. Please try again later.");
+      setError("Failed to download report. Please try again later.");
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  // Export report as PDF
-  const exportToPDF = () => {
-    const doc = new jsPDF();
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(16);
-    doc.text("Supply Usage and Savings Report", 10, 10);
-
-    doc.setFontSize(12);
-    doc.text("Usage Trends:", 10, 20);
-    if (usageData) {
-      usageData.dates.forEach((date: string, index: number) => {
-        doc.text(`${date}: ${usageData.values[index]} units`, 10, 30 + index * 10);
-      });
-    } else {
-      doc.text("No usage data available.", 10, 30);
-    }
-
-    doc.text("Savings Data:", 10, 50);
-    if (savingsData) {
-      savingsData.months.forEach((month: string, index: number) => {
-        doc.text(`${month}: $${savingsData.values[index]}`, 10, 60 + index * 10);
-      });
-    } else {
-      doc.text("No savings data available.", 10, 60);
-    }
-
-    doc.save("report.pdf");
-  };
-
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold text-[#2E7D32] mb-6">Reports</h1>
-      {loading ? (
-        <p className="text-center text-gray-500">Loading...</p>
-      ) : error ? (
-        <p className="text-center text-red-500">{error}</p>
-      ) : (
-        <div>
-          {/* Render ChartComponent */}
-          <ChartComponent />
 
-          {/* Export to PDF Button */}
-          <div className="mt-6 text-center">
-            <button
-              onClick={exportToPDF}
-              className="bg-[#2E7D32] text-white px-4 py-2 rounded hover:bg-[#1B5E20] transition duration-300"
-            >
-              Export as PDF
-            </button>
-          </div>
-        </div>
-      )}
+      {error && <p className="text-center text-red-500 mb-4">{error}</p>}
+
+      <ChartComponent />
+
+      <div className="mt-8 flex justify-center gap-4">
+        <Button
+          className={`bg-[#2E7D32] text-white transition duration-300 ease-in-out transform hover:scale-105 hover:bg-[#1B5E20] w-[20%] h-[15%]`}
+          variant="primary"
+          size="medium"
+          onClick={() => downloadReport("pdf")}
+          disabled={loading}
+        >
+          {loading ? "Downloading..." : "Download PDF Report"}
+        </Button>
+
+        <Button
+          className={`bg-[#2E7D32] text-white transition duration-300 ease-in-out transform hover:scale-105 hover:bg-[#1B5E20] w-[20%] h-[15%]`}
+          variant="primary"
+          size="medium"
+          onClick={() => downloadReport("excel")}
+          disabled={loading}
+        >
+          {loading ? "Downloading..." : "Download CSV Report"}
+        </Button>
+      </div>
     </div>
   );
 };

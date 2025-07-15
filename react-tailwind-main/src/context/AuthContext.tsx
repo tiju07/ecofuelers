@@ -22,11 +22,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Load user and token from localStorage on initial render
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    const storedToken = localStorage.getItem("token");
-    if (storedUser && storedToken) {
-      setUser(JSON.parse(storedUser));
-      setToken(storedToken);
+    const token = document.cookie
+      .split('; ')
+      .find(row => row.startsWith('access_token='))
+      ?.split('=')[1];
+    console.log("Token:", token);
+    if (token) {
+      const decodedToken = JSON.parse(atob(token.split('.')[1]));
+      if (token) setUser(decodedToken);
     }
   }, []);
 

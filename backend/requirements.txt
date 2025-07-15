@@ -9,3 +9,6 @@ pytest
 asyncpg
 aiosqlite
 uvicorn
+pandas
+openpyxl
+reportlab

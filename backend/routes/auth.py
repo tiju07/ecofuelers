@@ -14,6 +14,17 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 60  # 24 hours
 router = APIRouter()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+
+def require_admin(user: dict = Depends(get_current_user)):
+    if user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    return user
+
+def require_authenticated(user: dict = Depends(get_current_user)):
+    return user
+
+
+
 # POST /login: Authenticate user and return JWT token
 @router.post("/login")
 def login(user: UserLogin, response: Response = None):
@@ -38,6 +49,7 @@ def login(user: UserLogin, response: Response = None):
         samesite="lax"
     )
     # logger.info(f"User {user.email} logged in successfully")
+    db.close()
     return {"message": "Login successful"}
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
@@ -66,6 +78,7 @@ def register(user: UserCreate):
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
+    db.close()
     return new_user
 
 # GET /users/me: Return current user details

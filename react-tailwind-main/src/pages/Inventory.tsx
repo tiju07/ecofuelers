@@ -1,15 +1,13 @@
-// FILE: Inventory.tsx
-
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 import SupplyTable, { useSuppliesRefresh } from "../components/SupplyTable";
 import SupplyForm from "../components/SupplyForm";
 import UsageForm from "../components/UsageForm";
-import "../styles/AnimatedBackground.css";
-
-const greeneryImg = "https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=1200&q=80";
-const recycleImg = "/assets/recycle.png"; // Recycle image path
+import { Button } from "@app/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@app/components/ui/dialog";
+import { Card, CardContent, CardHeader, CardTitle } from "@app/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@app/components/ui/table";
 
 const Inventory: React.FC = () => {
   const { user } = useAuth();
@@ -19,25 +17,39 @@ const Inventory: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [savings, setSavings] = useState<number>(0);
   const [wasteReduction, setWasteReduction] = useState<number>(0);
-  const [recommendation, setRecommendation] = useState<string>("");
+  const [recommendations, setRecommendations] = useState<any[]>([]);
 
   const fetchSupplies = async () => {
     setLoading(true);
     setError(null);
     try {
-      const [suppliesRes, savingsRes, wasteRes, recRes] = await Promise.all([
-        await axios.get("http://127.0.0.1:8000/inventory/supplies"),
-        await axios.get("http://127.0.0.1:8000/inventory/savings"),
-        await axios.get("http://127.0.0.1:8000/inventory/alerts"),
-        await axios.get("http://localhost:8000/inventory/recommendations"),
+      const [suppliesRes, savingsRes, , recRes] = await Promise.all([
+        axios.get("http://127.0.0.1:8000/inventory/supplies"),
+        axios.get("http://127.0.0.1:8000/inventory/savings"),
+        axios.get("http://127.0.0.1:8000/inventory/alerts"),
+        axios.get("http://localhost:8000/inventory/recommendations"),
       ]);
+
+      const totalStock = recRes.data.reduce(
+        (sum: number, item: any) => sum + item.current_stock,
+        0
+      );
+
+      const totalOverstock = savingsRes.data.reduce(
+        (sum: number, item: any) => sum + item.overstock_quantity,
+        0
+      );
+
+      const wasteReduction = totalStock > 0 ? (totalOverstock / totalStock) * 100 : 0;
+
       const totalSavings = Array.isArray(savingsRes.data)
         ? savingsRes.data.reduce((sum: number, item: any) => sum + (item.estimated_savings || 0), 0)
-        : 0
+        : 0;
+
       setSupplies(suppliesRes.data);
       setSavings(totalSavings || 0);
-      setWasteReduction(wasteRes.data.percent || 0);
-      setRecommendation(recRes.data.recommendation || "No recommendations at this time.");
+      setWasteReduction(wasteReduction || 0);
+      setRecommendations(recRes.data || []);
     } catch (err) {
       setError("Failed to fetch inventory data. Please try again later.");
     } finally {
@@ -50,99 +62,122 @@ const Inventory: React.FC = () => {
   }, []);
 
   return (
-    <>
-      <div className="animated-bg"></div>
-      {/* Greenery Banner */}
-      <div className="relative w-full h-40 md:h-56 rounded-lg overflow-hidden shadow-lg mb-8">
-        <img
-          src={greeneryImg}
-          alt="Greenery"
-          className="w-full h-full object-cover opacity-80"
-        />
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-30">
-          <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-2xl md:text-3xl font-bold text-white drop-shadow-lg">
-              Smart Inventory Management
-            </h1>
-            <img
-              src={recycleImg}
-              alt="Recycle"
-              className="w-8 h-8 md:w-10 md:h-10 object-contain"
-              style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }}
-            />
+    <div className="container mx-auto p-4 relative z-10">
+      {loading ? (
+        <p className="text-center text-gray-500">Loading...</p>
+      ) : error ? (
+        <p className="text-center text-red-500">{error}</p>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="bg-white p-6 rounded-xl shadow-md flex flex-col items-center">
+              <img src="https://img.icons8.com/ios-filled/50/2E7D32/box.png" alt="Supplies" className="mb-2" />
+              <h2 className="text-lg font-bold text-gray-800">Total Supplies</h2>
+              <p className="text-3xl font-bold text-[#2E7D32]">{supplies?.length}</p>
+            </div>
+            <div className="bg-white p-6 rounded-xl shadow-md flex flex-col items-center">
+              <img src="https://img.icons8.com/ios-filled/50/388E3C/leaf.png" alt="Savings" className="mb-2" />
+              <h2 className="text-lg font-bold text-gray-800">Estimated Savings</h2>
+              <p className="text-3xl font-bold text-[#388E3C]">${savings}</p>
+              <span className="mt-2 text-green-700 text-sm font-semibold bg-green-100 px-2 py-1 rounded">
+                Up to 30% savings!
+              </span>
+            </div>
+            <div className="bg-white p-6 rounded-xl shadow-md flex flex-col items-center">
+              <img src="https://img.icons8.com/?size=100&id=13446&format=png&color=000000" alt="Waste Reduction" className="mb-2 w-[60px]" />
+              <h2 className="text-lg font-bold text-gray-800">Waste Reduction</h2>
+              <p className="text-3xl font-bold text-[#388E3C]">{wasteReduction.toFixed(2)}%</p>
+              <span className="mt-2 text-green-700 text-xs font-semibold bg-green-100 px-2 py-1 rounded">
+                Zero-waste goal
+              </span>
+            </div>
           </div>
-          <p className="text-md md:text-lg text-green-100 font-medium">
-            Track, Save, and Go Green 🌱
-          </p>
-        </div>
-      </div>
 
-      <div className="container mx-auto p-4 relative z-10">
-        {loading ? (
-          <p className="text-center text-gray-500">Loading...</p>
-        ) : error ? (
-          <p className="text-center text-red-500">{error}</p>
-        ) : (
-          <>
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              <div className="bg-white p-6 rounded-xl shadow-md flex flex-col items-center">
-                <img src="https://img.icons8.com/ios-filled/50/2E7D32/box.png" alt="Supplies" className="mb-2" />
-                <h2 className="text-lg font-bold text-gray-800">Total Supplies</h2>
-                <p className="text-3xl font-bold text-[#2E7D32]">{supplies?.length}</p>
-              </div>
-              <div className="bg-white p-6 rounded-xl shadow-md flex flex-col items-center">
-                <img src="https://img.icons8.com/ios-filled/50/388E3C/leaf.png" alt="Savings" className="mb-2" />
-                <h2 className="text-lg font-bold text-gray-800">Estimated Savings</h2>
-                <p className="text-3xl font-bold text-[#388E3C]">${savings}</p>
-                <span className="mt-2 text-green-700 text-sm font-semibold bg-green-100 px-2 py-1 rounded">
-                  Up to 30% savings!
-                </span>
-              </div>
-              <div className="bg-white p-6 rounded-xl shadow-md flex flex-col items-center">
-                <img src="https://img.icons8.com/ios-filled/50/81C784/recycle.png" alt="Waste Reduction" className="mb-2" />
-                <h2 className="text-lg font-bold text-gray-800">Waste Reduction</h2>
-                <p className="text-3xl font-bold text-[#388E3C]">{wasteReduction}%</p>
-                <span className="mt-2 text-green-700 text-xs font-semibold bg-green-100 px-2 py-1 rounded">
-                  Zero-waste goal
-                </span>
-              </div>
-            </div>
-
-            {/* AI Recommendation */}
-            <div className="bg-green-50 border-l-4 border-green-400 p-4 rounded-lg mb-8 flex items-center">
-              <img src="https://img.icons8.com/ios-filled/40/2E7D32/artificial-intelligence.png" alt="AI" className="mr-4" />
-              <div>
-                <h3 className="text-md font-bold text-green-800 mb-1">AI Recommendation</h3>
-                <p className="text-green-700">{recommendation}</p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Supply Table */}
-              <div className="lg:col-span-2 bg-white p-4 rounded shadow-md">
-                <h2 className="text-lg font-bold text-gray-800 mb-4">Supplies</h2>
-                <SupplyTable refreshKey={refreshKey} />
-              </div>
-
-              {/* Admin-only Supply Form */}
-              {user?.role === "admin" && (
-                <div className="bg-white p-4 rounded shadow-md">
-                  <h2 className="text-lg font-bold text-gray-800 mb-4">Add/Update Supplies</h2>
-                  <SupplyForm onSuccess={fetchSupplies} />
+          <div className="flex flex-col md:flex-row gap-4 justify-start mb-8">
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button className="bg-[#2E7D32] text-white" variant="primary" size="medium">View AI Recommendations</Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl">
+              <DialogHeader className="bg-white">
+                  <DialogTitle className="text-lg font-bold">AI Recommendations</DialogTitle>
+                </DialogHeader>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {recommendations.slice(0, 4).map((rec, index) => (
+                    <Card key={index} className="bg-white">
+                      <CardHeader className="bg-gray-100">
+                        <CardTitle className="text-lg font-semibold">Supply ID: {rec.supply_id}</CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-4">
+                        <p><strong>Current Stock:</strong> {rec.current_stock}</p>
+                        <p><strong>Avg Weekly Usage:</strong> {rec.average_weekly_usage}</p>
+                        <p><strong>Recommended Order:</strong> {rec.recommended_order_quantity}</p>
+                        <p><strong>Supplier:</strong> {rec.supplier}</p>
+                      </CardContent>
+                    </Card>
+                  ))}
                 </div>
-              )}
+              </DialogContent>
+            </Dialog>
 
-              {/* Usage Form (visible to all users) */}
-              <div className="bg-white p-4 rounded shadow-md">
-                <h2 className="text-lg font-bold text-gray-800 mb-4">Record Supply Usage</h2>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button className="bg-[#2E7D32] text-white" variant="primary" size="medium">View Supplies</Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-4xl">
+                <DialogHeader className="bg-white">
+                  <DialogTitle className="text-lg font-bold">Supplies List</DialogTitle>
+                </DialogHeader>
+                <div className="overflow-auto max-h-[400px]">
+                  <Table className="w-full">
+                    <TableHeader className="bg-gray-100">
+                      <TableRow className="hover:bg-gray-100">
+                        <TableHead className="text-left">ID</TableHead>
+                        <TableHead className="text-left">Name</TableHead>
+                        <TableHead className="text-left">Quantity</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody className="border">
+                      {supplies.map((supply: any) => (
+                        <TableRow key={supply.id} className="hover:bg-gray-100">
+                          <TableCell className="border">{supply.id}</TableCell>
+                          <TableCell className="border">{supply.name}</TableCell>
+                          <TableCell className="border">{supply.quantity}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button className="bg-[#2E7D32] text-white" variant="primary" size="medium">Add/Update Supply</Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-lg">
+                <DialogHeader className="bg-white">
+                  <DialogTitle className="text-lg font-bold">Supply Form</DialogTitle>
+                </DialogHeader>
+                <SupplyForm onSuccess={fetchSupplies} />
+              </DialogContent>
+            </Dialog>
+
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button className="bg-[#2E7D32] text-white" variant="primary" size="medium">Record Usage</Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-lg">
+                <DialogHeader className="bg-white">
+                  <DialogTitle className="text-lg font-bold">Usage Form</DialogTitle>
+                </DialogHeader>
                 <UsageForm onSuccess={triggerRefresh} />
-              </div>
-            </div>
-          </>
-        )}
-      </div>
-    </>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </>
+      )}
+    </div>
   );
 };
 

@@ -11,7 +11,7 @@ load_dotenv()
 DATABASE_URL = "sqlite:///inventory.db"
 
 # SQLAlchemy engine and session factory
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False}, pool_size=10, max_overflow=20)
+engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False}, pool_size=30, max_overflow=50)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # Base class for models

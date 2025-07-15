@@ -55,7 +55,7 @@ def get_user_by_email(email: str, db: Session = Depends(get_db)):
     db_user = db.query(Users).filter(Users.username == email).first()
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
-    
+    db.close()
     return db_user
 
 # Hash password
