@@ -103,7 +103,7 @@ async def get_current_user(request: Request, db: Session = Depends(get_db)):
     authorization: str = request.headers.get("Authorization")
     if not authorization:
         raise credentials_exception
-    token = authorization.replace("Bearer ", "", 1).replace("\"", "")
+    token = authorization.replace("Bearer ", "", 1).replace("\"", "").strip()
     if not token:
         raise credentials_exception
     try:

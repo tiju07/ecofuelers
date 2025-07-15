@@ -1,15 +1,19 @@
 // FILE: AuthContext.tsx
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { getCookie } from './Services';
+import axios from 'axios';
 
 interface User {
   username: string;
-  role: "admin" | "employee";
+  first_name: string | null;
+  last_name: string | null;
+  role: 'admin' | 'user';
 }
 
 interface AuthContextType {
   user: User | null;
   token: string | null;
-  login: (username: string, role: "admin" | "employee", token: string) => void;
+  login: () => void;
   logout: () => void;
   isAuthenticated: () => boolean;
 }
@@ -20,40 +24,64 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
 
-  // Load user and token from localStorage on initial render
   useEffect(() => {
-    const token = document.cookie
+    var token = document.cookie
       .split('; ')
-      .find(row => row.startsWith('access_token='))
+      .find((row) => row.startsWith('access_token='))
       ?.split('=')[1];
-    console.log("Token:", token);
+    console.log('Token:', token);
     if (token) {
+      console.log(token);
+      token = token.substring(7);
+      console.log('Token after substring:', token);
+      setToken(token);
       const decodedToken = JSON.parse(atob(token.split('.')[1]));
-      if (token) setUser(decodedToken);
+      console.log('Decoded token:', decodedToken);
+      if (token) {
+        setUser({
+          username: decodedToken.username,
+          first_name: decodedToken.first_name || null,
+          last_name: decodedToken.last_name || null,
+          role: decodedToken.role || 'user',
+        });
+        console.log('User set:', user);
+      }
     }
   }, []);
 
-  // Login function: store user and token in state and localStorage
-  const login = (username: string, role: "admin" | "employee", token: string) => {
-    const userData = { username, role };
-    setUser(userData);
-    setToken(token);
-    localStorage.setItem("user", JSON.stringify(userData));
-    localStorage.setItem("token", token);
+  const login = () => {
+    var token = document.cookie
+      .split('; ')
+      .find((row) => row.startsWith('access_token='))
+      ?.split('=')[1];
+    if (token) {
+      console.log(token);
+      token = token.substring(8);
+      setToken(token);
+      const decodedToken = JSON.parse(atob(token.split('.')[1]));
+      if (token) {
+        setUser({
+          username: decodedToken.username,
+          first_name: decodedToken.first_name || null,
+          last_name: decodedToken.last_name || null,
+          role: decodedToken.role || 'user',
+        });
+      }
+    }
   };
 
   // Logout function: clear user and token from state and localStorage
   const logout = () => {
+    document.cookie = 'access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
     setUser(null);
     setToken(null);
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
   };
 
   // Check if the user is authenticated
   const isAuthenticated = () => {
-    // return !!token;
-    return true;
+    console.log('From authcontext' + token);
+    return !!token;
+    // return true;
   };
 
   return (
@@ -67,7 +95,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
 };

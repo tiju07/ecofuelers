@@ -6,7 +6,7 @@ from passlib.context import CryptContext
 from ..database.db import get_db
 from ..schemas.user import UserCreate, UserLogin, UserResponse
 from ..models.users import Users
-from ..utils.auth import create_jwt_token, get_current_user
+from ..utils.auth import create_jwt_token, get_current_user, get_user_by_email
 from jose import JWTError, jwt
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 60  # 24 hours
@@ -47,7 +47,7 @@ def login(user: UserLogin, response: Response = None):
         )
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": str(db_user.id), "username": db_user.username, "first_name": db_user.first_name, "last_name": db_user.last_name}, expires_delta=access_token_expires
+        data={"sub": str(db_user.id), "username": db_user.username, "first_name": db_user.first_name, "last_name": db_user.last_name, "role": db_user.role.value}, expires_delta=access_token_expires
     )
     response.set_cookie(
         key="access_token",
@@ -118,3 +118,8 @@ def logout():
     response.delete_cookie("token")
     response.status_code = status.HTTP_204_NO_CONTENT
     return response
+
+@router.get("/role/{username}")
+def get_user_role(username: str):
+    user = get_user_by_email(username)
+    return {"role": user.role.value}

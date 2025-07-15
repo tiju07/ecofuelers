@@ -1,55 +1,74 @@
-import React, { useEffect, useState } from "react";
-import { NavLink, useNavigate, useLocation } from "react-router-dom";
-import axios from "axios";
-import { getCookie } from "src/context/Services";
+import React, { useEffect, useState } from 'react';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
+import axios from 'axios';
+import { Bell, User } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from '@app/components/ui/dropdown-menu';
+import { getCookie } from 'src/context/Services';
+import { useAuth } from 'src/context/AuthContext';
+import { log } from 'console';
 
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [user, setUser] = useState<
-    { username: string; role: "admin" | "employee" } | null
-  >(null);
+  const [user, setUser] = useState<{ username: string; role: 'admin' | 'employee' } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [alerts, setAlerts] = useState<any[]>([]);
+  const { logout, isAuthenticated } = useAuth();
 
-  // Only one effect: refetch user on location change, but skip loading if already loaded and path didn't change
+  // Fetch user and alerts
   useEffect(() => {
     let ignore = false;
+
     const fetchUser = async () => {
-      setLoading(true);
       try {
-        const token = document.cookie
-          .split('; ')
-          .find(row => row.startsWith('access_token='))
-          ?.split('=')[1];
+        const token = getCookie('access_token');
         if (token) {
           const decodedToken = JSON.parse(atob(token.split('.')[1]));
-          if (token) setUser(decodedToken);
+          if (!ignore) setUser(decodedToken);
         }
-
       } catch (err) {
         if (!ignore) setUser(null);
       } finally {
         if (!ignore) setLoading(false);
       }
     };
+
+    const fetchAlerts = async () => {
+      try {
+        const response = await axios.get('http://localhost:8000/inventory/alerts', {
+          withCredentials: true,
+        });
+        if (!ignore) setAlerts(response.data || []);
+      } catch (err) {
+        console.error('Failed to fetch alerts:', err);
+      }
+    };
+
     fetchUser();
-    return () => { ignore = true; };
+    fetchAlerts();
+
+    return () => {
+      ignore = true;
+    };
   }, [location.pathname]);
 
   const handleLogout = async () => {
-    // Remove token cookie (works if not httpOnly)
-    document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    setUser(null);
-    setLoading(false);
-
-    navigate("/login");
+    logout();
+    navigate('/login');
   };
 
   if (loading) {
     return (
-      <nav className="bg-[#2E7D32] text-white px-4 py-3 shadow-md">
-        <div className="container mx-auto flex justify-between items-center">
-          <span className="font-extrabold text-xl tracking-tight flex items-center animate-pulse">
+      <nav className='animate-fade-in fixed top-0 z-50 w-full rounded-b-lg bg-green-50/80 px-4 py-3 text-[#2E7D32] shadow-md backdrop-blur-md'>
+        <div className='container mx-auto flex items-center justify-between'>
+          <span className='flex animate-pulse items-center text-xl font-extrabold tracking-tight'>
             Loading...
           </span>
         </div>
@@ -58,68 +77,78 @@ const Navbar: React.FC = () => {
   }
 
   return (
-    <nav className="bg-[#2E7D32] text-white px-4 py-3 shadow-md">
-      <div className="container mx-auto flex justify-between items-center">
-        {/* Left: Logo and Dashboard */}
-        <div className="flex items-center space-x-6">
-          <span className="font-extrabold text-xl tracking-tight flex items-center">
-            <svg
-              className="w-7 h-7 mr-2 text-[#A5D6A7]"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.364-6.364l-1.414 1.414M6.05 17.95l-1.414 1.414m12.728 0l-1.414-1.414M6.05 6.05L4.636 4.636"
-              />
-            </svg>
-            EcoFuelers
-          </span>
+    <nav className='animate-fade-in fixed top-0 z-50 w-full rounded-b-lg bg-green-50/80 px-4 py-3 text-[#2E7D32] shadow-md backdrop-blur-md'>
+      <div className='container mx-auto flex items-center justify-between'>
+        {/* Left: Logo and Navigation */}
+        <div className='flex items-center space-x-6'>
           <NavLink
-            to="/"
+            to='/'
+            className='flex items-center text-xl font-extrabold tracking-tight text-[#2E7D32]'
+          >
+            <span className='flex items-center text-xl font-extrabold tracking-tight'>
+              <svg
+                className='mr-2 h-7 w-7 text-[#A5D6A7]'
+                fill='none'
+                stroke='currentColor'
+                strokeWidth='2'
+                viewBox='0 0 24 24'
+              >
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  d='M12 3v2m0 14v2m9-9h-2M5 12H3m15.364-6.364l-1.414 1.414M6.05 17.95l-1.414 1.414m12.728 0l-1.414-1.414M6.05 6.05L4.636 4.636'
+                />
+              </svg>
+              SustainaStock
+            </span>
+          </NavLink>
+          <NavLink
+            to='/dashboard'
             className={({ isActive }) =>
-              `px-3 py-2 rounded font-semibold ${isActive ? "bg-[#1B5E20]" : "hover:bg-[#1B5E20] transition"
+              `rounded px-3 py-2 font-semibold transition-transform duration-300 hover:scale-105 ${
+                isActive ? 'bg-green-100 text-[#2E7D32]' : 'text-[#2E7D32] hover:bg-green-100'
               }`
             }
           >
             Dashboard
           </NavLink>
-          {user && (
+          {isAuthenticated() && (
             <>
               <NavLink
-                to="/inventory"
+                to='/inventory'
                 className={({ isActive }) =>
-                  `px-3 py-2 rounded font-semibold ${isActive ? "bg-[#1B5E20]" : "hover:bg-[#1B5E20] transition"
+                  `rounded px-3 py-2 font-semibold transition-transform duration-300 hover:scale-105 ${
+                    isActive ? 'bg-green-100 text-[#2E7D32]' : 'text-[#2E7D32] hover:bg-green-100'
                   }`
                 }
               >
                 Inventory
               </NavLink>
               <NavLink
-                to="/recommendations"
+                to='/recommendations'
                 className={({ isActive }) =>
-                  `px-3 py-2 rounded font-semibold ${isActive ? "bg-[#1B5E20]" : "hover:bg-[#1B5E20] transition"
+                  `rounded px-3 py-2 font-semibold transition-transform duration-300 hover:scale-105 ${
+                    isActive ? 'bg-green-100 text-[#2E7D32]' : 'text-[#2E7D32] hover:bg-green-100'
                   }`
                 }
               >
                 Recommendations
               </NavLink>
               <NavLink
-                to="/alerts"
+                to='/alerts'
                 className={({ isActive }) =>
-                  `px-3 py-2 rounded font-semibold ${isActive ? "bg-[#1B5E20]" : "hover:bg-[#1B5E20] transition"
+                  `rounded px-3 py-2 font-semibold transition-transform duration-300 hover:scale-105 ${
+                    isActive ? 'bg-green-100 text-[#2E7D32]' : 'text-[#2E7D32] hover:bg-green-100'
                   }`
                 }
               >
                 Alerts
               </NavLink>
               <NavLink
-                to="/reports"
+                to='/reports'
                 className={({ isActive }) =>
-                  `px-3 py-2 rounded font-semibold ${isActive ? "bg-[#1B5E20]" : "hover:bg-[#1B5E20] transition"
+                  `rounded px-3 py-2 font-semibold transition-transform duration-300 hover:scale-105 ${
+                    isActive ? 'bg-green-100 text-[#2E7D32]' : 'text-[#2E7D32] hover:bg-green-100'
                   }`
                 }
               >
@@ -127,64 +156,113 @@ const Navbar: React.FC = () => {
               </NavLink>
             </>
           )}
-          {/* {user?.role === "employee" && (
-            <>
-              <NavLink
-                to="/inventory"
-                className={({ isActive }) =>
-                  `px-3 py-2 rounded font-semibold ${isActive ? "bg-[#1B5E20]" : "hover:bg-[#1B5E20] transition"
-                  }`
-                }
-              >
-                Inventory
-              </NavLink>
-              <NavLink
-                to="/alerts"
-                className={({ isActive }) =>
-                  `px-3 py-2 rounded font-semibold ${isActive ? "bg-[#1B5E20]" : "hover:bg-[#1B5E20] transition"
-                  }`
-                }
-              >
-                Alerts
-              </NavLink>
-            </>
-          )} */}
         </div>
-        {/* Right: Auth Buttons */}
-        <div className="flex items-center space-x-3">
+
+        {/* Right: Notifications and Profile */}
+        <div className='flex items-center space-x-3'>
+          {user && (
+            <>
+              <DropdownMenu>
+                <DropdownMenuTrigger className='relative rounded-full bg-white/90 p-2 shadow-md transition-transform duration-300 hover:scale-105 hover:shadow-lg focus:outline-none'>
+                  <Bell className='h-6 w-6 text-[#2E7D32]' aria-label='Notifications' />
+                  {alerts.length > 0 && (
+                    <span className='absolute -top-1 -right-1 inline-flex animate-pulse items-center justify-center rounded-full bg-red-600 px-2 py-1 text-xs font-bold text-white'>
+                      {alerts.length}
+                    </span>
+                  )}
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className='max-h-96 w-80 overflow-y-auto rounded-xl border border-green-200 bg-white shadow-xl'>
+                  <DropdownMenuLabel
+                    className='px-4 py-2 text-lg font-semibold text-[#2E7D32]'
+                    inset={true}
+                  >
+                    Notifications
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator className='my-1 bg-green-200' />
+                  {alerts.length === 0 ? (
+                    <DropdownMenuItem className='px-4 py-2 text-sm text-gray-500' inset={true}>
+                      No new alerts 🎉
+                    </DropdownMenuItem>
+                  ) : (
+                    alerts.slice(0, 5).map((alert, idx) => (
+                      <DropdownMenuItem
+                        inset={true}
+                        key={idx}
+                        className='flex flex-col items-start gap-1 px-4 py-3 transition hover:bg-green-50'
+                      >
+                        <span className='font-medium text-gray-800'>{alert.alert}</span>
+                        <span className='text-xs text-gray-500'>{alert.name}</span>
+                      </DropdownMenuItem>
+                    ))
+                  )}
+                  <DropdownMenuSeparator className='my-1 bg-green-200' />
+                  <DropdownMenuItem
+                    inset={true}
+                    onClick={() => navigate('/alerts')}
+                    className='cursor-pointer px-4 py-2 text-center font-medium text-[#2E7D32] transition hover:bg-green-50'
+                  >
+                    View All Alerts →
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger className='rounded-full bg-white/90 p-2 shadow-md transition-transform duration-300 hover:scale-105 hover:shadow-lg focus:outline-none'>
+                  <User className='h-6 w-6 text-[#2E7D32]' aria-label='Profile' />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className='w-48 rounded-xl border border-green-200 bg-white shadow-xl'>
+                  <DropdownMenuLabel
+                    inset={true}
+                    className='px-4 py-2 text-lg font-semibold text-[#2E7D32]'
+                  >
+                    {user?.username || 'User'}
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator className='my-1 bg-green-200' />
+                  {/* <DropdownMenuItem
+                    inset={true}
+                    onClick={() => navigate('/profile')}
+                    className='cursor-pointer px-4 py-2 font-medium text-[#2E7D32] transition hover:bg-green-50'
+                  >
+                    View Profile
+                  </DropdownMenuItem> */}
+                  <DropdownMenuItem
+                    inset={true}
+                    onClick={handleLogout}
+                    className='cursor-pointer px-4 py-2 font-medium text-red-600 transition hover:bg-red-50'
+                  >
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
+          )}
           {!user && (
             <>
               <NavLink
-                to="/login"
+                to='/login'
                 className={({ isActive }) =>
-                  `px-4 py-2 rounded font-semibold border border-white ${isActive
-                    ? "bg-[#1565C0] text-white"
-                    : "text-[#1565C0] bg-white hover:bg-[#E3F2FD] transition"
+                  `rounded px-4 py-2 font-semibold transition-transform duration-300 hover:scale-105 ${
+                    isActive
+                      ? 'bg-green-100 text-[#2E7D32]'
+                      : 'bg-white text-[#2E7D32] hover:bg-green-100'
                   }`
                 }
               >
                 Login
               </NavLink>
               <NavLink
-                to="/register"
+                to='/register'
                 className={({ isActive }) =>
-                  `px-4 py-2 rounded font-semibold border border-white ${isActive
-                    ? "bg-[#00897B] text-white"
-                    : "text-[#00897B] bg-white hover:bg-[#E0F2F1] transition"
+                  `rounded px-4 py-2 font-semibold transition-transform duration-300 hover:scale-105 ${
+                    isActive
+                      ? 'bg-green-100 text-[#2E7D32]'
+                      : 'bg-white text-[#2E7D32] hover:bg-green-100'
                   }`
                 }
               >
                 Register
               </NavLink>
             </>
-          )}
-          {user && (
-            <button
-              onClick={handleLogout}
-              className="px-4 py-2 rounded font-semibold bg-red-600 hover:bg-red-700 transition border border-white"
-            >
-              Logout
-            </button>
           )}
         </div>
       </div>

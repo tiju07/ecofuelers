@@ -69,7 +69,11 @@ def calculate_order_recommendation(db: Session):
             avg_weekly_usage = sum(filtered_usage) / len(filtered_usage)
 
         desired_stock = 2 * avg_weekly_usage
-        recommended_quantity = max(0, ceil(abs(desired_stock - supply.quantity)))
+        if(desired_stock > supply.quantity):
+            recommended_quantity = desired_stock
+        else:
+            # If current stock is sufficient, recommend to order at least 1.5x the average weekly usage
+            recommended_quantity = desired_stock
 
         stock_available = check_supplier_stock(supply)
         conflict_alerts = alert_map.get(supply.id, [])
@@ -88,6 +92,7 @@ def calculate_order_recommendation(db: Session):
                 "conflicts": conflict_alerts,
                 "alternative_suppliers": alt_suppliers["alternative_suppliers"],
                 "alternative_products": alt_products,
+                "avg_weekly_usage": avg_weekly_usage
             })
         else:
             recommendations.append({
@@ -98,6 +103,7 @@ def calculate_order_recommendation(db: Session):
                 "supplier": supply.primary_supplier,
                 "status": "Primary supplier available",
                 "conflicts": conflict_alerts,
+                "avg_weekly_usage": avg_weekly_usage
             })
     db.close()
     return recommendations

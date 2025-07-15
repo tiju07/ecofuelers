@@ -10,7 +10,8 @@ class SupplyBase(BaseModel):
     category: str
     quantity: int = Field(..., ge=0, description="Quantity must be non-negative")
     expiration_date: Optional[datetime] = None
-    last_updated: datetime = None
+    primary_supplier: Optional[str] = None
+    cost_per_unit: Optional[float] = None  # New field for cost per unit
 
 # SupplyCreate schema (extends SupplyBase)
 class SupplyCreate(SupplyBase):
@@ -26,7 +27,6 @@ class SupplyUpdate(BaseModel):
 # SupplyResponse schema (extends SupplyBase with additional fields)
 class SupplyResponse(SupplyBase):
     id: int
-    last_updated: datetime
 
     class Config:
         orm_mode = True

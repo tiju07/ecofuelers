@@ -1,18 +1,18 @@
-import { log } from 'console';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { Card, CardContent, CardHeader, CardTitle } from '@app/components/ui/card';
+import { Button } from '@app/components/ui/button';
+import { Input } from '@app/components/ui/input';
+import { Label } from '@app/components/ui/label';
 
 const Register: React.FC = () => {
-      const navigate = useNavigate();
-
-      
-
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     username: '',
     password: '',
     first_name: '',
     last_name: '',
-    role : "admin"
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -20,7 +20,6 @@ const Register: React.FC = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
-    console.log(form)
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -28,90 +27,107 @@ const Register: React.FC = () => {
     setLoading(true);
     setError('');
     setSuccess('');
+
     try {
-      const response = await fetch('http://127.0.0.1:8000/auth/register', {
-        method: 'POST',
+      const response = await axios.post('http://127.0.0.1:8000/auth/register', form, {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(form),
+        withCredentials: true,
       });
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.detail || 'Registration failed');
-      }
-      navigate("/login");
-      setSuccess('Registration successful!');
 
-      setForm({ username: '', password: '', first_name: '', last_name: '' , role : "admin" }); // Reset form
+      setSuccess('Registration successful!');
+      setForm({ username: '', password: '', first_name: '', last_name: '' });
+      navigate('/login');
     } catch (err: any) {
-      setError(err.message);
+      setError(err.response?.data?.detail || 'Registration failed');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white p-8 rounded shadow-md w-full max-w-md"
-      >
-        <h2 className="text-2xl font-bold mb-6 text-center">Register</h2>
-        {error && <div className="mb-4 text-red-500">{error}</div>}
-        {success && <div className="mb-4 text-green-500">{success}</div>}
-        <div className="mb-4">
-          <label className="block mb-1 font-semibold">Username</label>
-          <input
-            type="text"
-            name="username"
-            value={form.username}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border rounded"
-            required
-          />
-        </div>
-        <div className="mb-4">
-          <label className="block mb-1 font-semibold">Password</label>
-          <input
-            type="password"
-            name="password"
-            value={form.password}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border rounded"
-            required
-          />
-        </div>
-        <div className="mb-4">
-          <label className="block mb-1 font-semibold">First Name</label>
-          <input
-            type="text"
-            name="first_name"
-            value={form.first_name}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border rounded"
-            required
-          />
-        </div>
-        <div className="mb-6">
-          <label className="block mb-1 font-semibold">Last Name</label>
-          <input
-            type="text"
-            name="last_name"
-            value={form.last_name}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border rounded"
-            required
-          />
-        </div>
-        <button
-          type="submit"
-          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
-          disabled={loading}
-        >
-          {loading ? 'Registering...' : 'Register'}
-        </button>
-      </form>
+    <div className='flex min-h-screen items-center justify-center bg-green-50/80 backdrop-blur-md'>
+      <Card className='animate-fade-in w-full max-w-md rounded-xl border border-green-200 bg-white p-6 shadow-lg'>
+        <CardHeader className='mb-4'>
+          <CardTitle className='text-center text-3xl font-bold text-[#2E7D32]'>
+            Register 🌿
+          </CardTitle>
+        </CardHeader>
+        <CardContent className='space-y-4'>
+          {error && <p className='mb-4 text-center text-red-500'>{error}</p>}
+          {success && <p className='mb-4 text-center text-green-500'>{success}</p>}
+          <form onSubmit={handleSubmit} className='space-y-4'>
+            <div className='space-y-2'>
+              <Label htmlFor='username' className='text-sm font-medium text-gray-700'>
+                Username
+              </Label>
+              <Input
+                type='text'
+                id='username'
+                name='username'
+                value={form.username}
+                onChange={handleChange}
+                required
+                className='rounded-lg border-gray-300 transition-all duration-300 focus:border-[#2E7D32] focus:ring-[#2E7D32]'
+              />
+            </div>
+            <div className='space-y-2'>
+              <Label htmlFor='password' className='text-sm font-medium text-gray-700'>
+                Password
+              </Label>
+              <Input
+                type='password'
+                id='password'
+                name='password'
+                value={form.password}
+                onChange={handleChange}
+                required
+                className='rounded-lg border-gray-300 transition-all duration-300 focus:border-[#2E7D32] focus:ring-[#2E7D32]'
+              />
+            </div>
+            <div className='space-y-2'>
+              <Label htmlFor='first_name' className='text-sm font-medium text-gray-700'>
+                First Name
+              </Label>
+              <Input
+                type='text'
+                id='first_name'
+                name='first_name'
+                value={form.first_name}
+                onChange={handleChange}
+                required
+                className='rounded-lg border-gray-300 transition-all duration-300 focus:border-[#2E7D32] focus:ring-[#2E7D32]'
+              />
+            </div>
+            <div className='space-y-2'>
+              <Label htmlFor='last_name' className='text-sm font-medium text-gray-700'>
+                Last Name
+              </Label>
+              <Input
+                type='text'
+                id='last_name'
+                name='last_name'
+                value={form.last_name}
+                onChange={handleChange}
+                required
+                className='rounded-lg border-gray-300 transition-all duration-300 focus:border-[#2E7D32] focus:ring-[#2E7D32]'
+              />
+            </div>
+            <div className='flex justify-center'>
+              <Button
+                variant={'primary'}
+                size={'lg'}
+                type='submit'
+                disabled={loading}
+                className='rounded-lg bg-[#2E7D32] px-6 py-2 text-white transition-transform duration-300 hover:scale-105 hover:bg-[#1B5E20] disabled:opacity-50'
+              >
+                {loading ? 'Registering...' : 'Register'}
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 };

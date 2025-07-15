@@ -1,6 +1,8 @@
 /* eslint-disable simple-import-sort/imports */
 // FILE: App.tsx
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { Toaster } from '@app/components/ui/sonner';
+
 import Navbar from './components/Navbar';
 import Dashboard from './pages/Dashboard';
 import Inventory from './pages/Inventory';
@@ -10,27 +12,61 @@ import Reports from './pages/Reports';
 import Login from './pages/Login';
 import { useAuth } from './context/AuthContext';
 import Register from './pages/Register';
+import { useEffect } from 'react';
+import LandingPage from './pages/LandingPage';
 
 const App = () => {
   const { isAuthenticated } = useAuth();
+  const { user } = useAuth();
 
   // Protected Route Component
   const ProtectedRoute = ({ children }) => {
+    useEffect(() => {
+      console.log('ProtectedRoute: Checking authentication status' + isAuthenticated());
+    }, []);
     // return isAuthenticated() ? <>{children}</> : <Navigate to='/login' replace />;
     return isAuthenticated() ? <>{children}</> : <Navigate to='/login' replace />;
+  };
+
+  const ProtectedRouteAuth = ({ children }) => {
+    useEffect(() => {
+      console.log('ProtectedRouteAuth: Checking authentication status' + isAuthenticated());
+    }, []);
+    return !isAuthenticated() ? <>{children}</> : <Navigate to='/dashboard' replace />;
   };
 
   return (
     <Router>
       <div className='flex min-h-screen flex-col bg-[#E8F5E9] text-[#2E7D32]'>
-        {/* Navbar displayed on all pages except Login */}
         <Navbar />
-        <main className='flex-grow'>
+        <main className='mt-[6%] flex-grow'>
           <Routes>
-            <Route path='/login' element={<Login />} />
-            <Route path='/register' element={<Register />} />
             <Route
               path='/'
+              element={
+                // <ProtectedRouteAuth>
+                <LandingPage />
+                // </ProtectedRouteAuth>
+              }
+            ></Route>
+            <Route
+              path='/login'
+              element={
+                <ProtectedRouteAuth>
+                  <Login />
+                </ProtectedRouteAuth>
+              }
+            />
+            <Route
+              path='/register'
+              element={
+                <ProtectedRouteAuth>
+                  <Register />
+                </ProtectedRouteAuth>
+              }
+            />
+            <Route
+              path='/dashboard'
               element={
                 <ProtectedRoute>
                   <Dashboard />
@@ -71,6 +107,18 @@ const App = () => {
             />
           </Routes>
         </main>
+        <Toaster
+          position='top-right'
+          richColors
+          closeButton={false}
+          toastOptions={{
+            className: 'bg-[#2E7D32] text-white',
+            style: {
+              backgroundColor: '#2E7D32',
+              color: 'white',
+            },
+          }}
+        />
       </div>
     </Router>
   );

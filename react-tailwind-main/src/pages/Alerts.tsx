@@ -1,104 +1,99 @@
-// FILE: AlertCard.tsx
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import "axios"; // Ensures type declarations are loaded
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { Card, CardContent, CardHeader, CardTitle } from '@app/components/ui/card';
+import { Box, Lightbulb, OctagonAlert } from 'lucide-react';
 
-interface Alert {
-  id: number;
-  supply_id: number; // Added supply id
-  product_name: string; // Changed from supply_name to product_name
-  alert: string; // Added alert
-  expiration_date: string; // Added expiration date
-  urgency: "low" | "medium" | "high";
-}
-
-const AlertCard: React.FC = () => {
-  const [alerts, setAlerts] = useState<Alert[]>([]);
+const RecommendationPage: React.FC = () => {
+  const [recommendations, setRecommendations] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch alerts from the backend
-  const fetchAlerts = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await axios.get("http://localhost:8000/inventory/alerts", { withCredentials: true });
-      setAlerts(response.data);
-    } catch (err) {
-      if (axios.isAxiosError(err) && err.response) {
-        setError(err.response.data.message || "Failed to fetch alerts. Please try again later.");
-      } else {
-        setError("An unexpected error occurred. Please try again later.");
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Dismiss an alert
-  const dismissAlert = async (alertId: number) => {
-    try {
-      await axios.post(`/alerts/${alertId}/resolve`);
-      setAlerts((prevAlerts) => prevAlerts.filter((alert) => alert.id !== alertId));
-    } catch (err) {
-      if (axios.isAxiosError(err) && err.response) {
-        setError(err.response.data.message || "Failed to dismiss the alert. Please try again.");
-      } else {
-        setError("An unexpected error occurred. Please try again.");
-      }
-    }
-  };
-
   useEffect(() => {
-    fetchAlerts();
+    const fetchRecommendations = async () => {
+      try {
+        const res = await axios.get('http://localhost:8000/inventory/alerts');
+        setRecommendations(res.data || []);
+      } catch (err) {
+        setError('Failed to fetch recommendations. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRecommendations();
   }, []);
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold text-[#2E7D32] mb-4">Waste Reduction Alerts</h1>
-      {loading ? (
-        <p className="text-center text-gray-500">Loading...</p>
-      ) : error ? (
-        <p className="text-center text-red-500">{error}</p>
-      ) : alerts.length === 0 ? (
-        <p className="text-center text-gray-500">No alerts to display.</p>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {alerts.map((alert) => (
-            <div
-              key={alert.id}
-              className={`p-4 rounded shadow-md border ${alert.urgency === "high"
-                ? "border-red-500"
-                : alert.urgency === "medium"
-                  ? "border-yellow-500"
-                  : "border-green-500"
-                }`}
-            >
-              <h2 className="text-lg font-bold text-gray-800">{alert.product_name}</h2>
-              <p className="text-gray-700">Alert: {alert.alert}</p>
-              <p className="text-gray-700">Expiration Date: {alert.expiration_date}</p>
-              <p
-                className={`font-semibold ${alert.urgency === "high"
-                  ? "text-red-500"
-                  : alert.urgency === "medium"
-                    ? "text-yellow-500"
-                    : "text-green-500"
-                  }`}
-              >
-                Urgency: {alert.urgency?.charAt(0).toUpperCase() + alert.urgency?.slice(1)}
-              </p>
-              <button
-                onClick={() => dismissAlert(alert.id)}
-                className="mt-4 bg-[#2E7D32] text-white px-4 py-2 rounded hover:bg-[#1B5E20] transition duration-300"
-              >
-                Dismiss
-              </button>
+    <div className='min-h-screen bg-green-50 px-4 py-10 md:px-10'>
+      <Card className='mx-auto max-w-6xl rounded-xl bg-white p-6 shadow-lg'>
+        <h1 className='mb-6 text-center text-3xl font-bold text-[#2E7D32]'>Alerts 🚨</h1>
+
+        {loading ? (
+          <div className='animate-pulse space-y-6'>
+            <div className='grid grid-cols-1 gap-6 md:grid-cols-3'>
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className='h-32 rounded-xl bg-gray-200 p-6' />
+              ))}
             </div>
-          ))}
-        </div>
-      )}
+          </div>
+        ) : error ? (
+          <p className='text-center text-red-600'>{error}</p>
+        ) : recommendations.length === 0 ? (
+          <p className='text-center text-gray-700'>No recommendations at this time.</p>
+        ) : (
+          <div className='grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3'>
+            {recommendations.map((rec, index) => (
+              <Card
+                key={index}
+                className='animate-fade-in transform rounded-lg border border-green-200 bg-white shadow-md transition duration-300 hover:scale-105 hover:shadow-lg'
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
+                <CardHeader className={''}>
+                  <div className='flex items-center space-x-2'>
+                    <Lightbulb className='h-6 w-6 text-[#2E7D32]' />
+                    <CardTitle className='text-xl font-semibold text-[#2E7D32]'>
+                      {rec.name}
+                    </CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className='space-y-3'>
+                  <div className='flex items-center space-x-2'>
+                    <Box className='h-5 w-5 text-gray-500' />
+                    <span className='text-gray-600'>Current Stock:</span>
+                    <span className='text-gray-800'>{rec.quantity}</span>
+                  </div>
+                  {/* <div className='flex items-center space-x-2'>
+                    <PlusCircle className='h-5 w-5 text-[#2E7D32]' />
+                    <span className='text-gray-600'>Recommended Order:</span>
+                    <span className='font-bold text-[#2E7D32]'>
+                      {rec.recommended_order_quantity}
+                    </span>
+                  </div> */}
+                  {rec.expiration_date && (
+                    <div className='flex items-center space-x-2'>
+                      <OctagonAlert className='h-5 w-5 text-yellow-600' />
+                      <span className='text-gray-600'>Expiration Date:</span>
+                      <span className='font-medium text-yellow-800'>
+                        {new Date(rec.expiration_date).toDateString()}
+                      </span>
+                    </div>
+                  )}
+                  <div>
+                    {/* <span className='text-gray-600'>Issues:</span> */}
+                    <div className='mt-1 flex flex-wrap gap-2'>
+                      <span className='rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-800'>
+                        {rec.alert}
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </Card>
     </div>
   );
 };
 
-export default AlertCard;
+export default RecommendationPage;
