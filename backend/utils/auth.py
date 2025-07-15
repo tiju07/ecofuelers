@@ -100,20 +100,20 @@ async def get_current_user(request: Request, db: Session = Depends(get_db)):
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
-    token = request.cookies.get("access_token")
+    authorization: str = request.headers.get("Authorization")
+    if not authorization:
+        raise credentials_exception
+    token = authorization.replace("Bearer ", "", 1).replace("\"", "")
     if not token:
         raise credentials_exception
-    # Remove "Bearer " prefix if present
-    if token.startswith("Bearer "):
-        token = token[len("Bearer "):]
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        email: str = payload.get("sub")
-        if email is None:
+        username: str = payload.get("username")
+        if username is None:
             raise credentials_exception
     except JWTError:
         raise credentials_exception
-    user = get_user_by_email(email)
+    user = get_user_by_email(username)
     if user is None:
         raise credentials_exception
     return user

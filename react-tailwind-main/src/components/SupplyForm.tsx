@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
+import { getCookie } from "src/context/Services";
 
 interface SupplyFormProps {
   supplyToEdit?: {
@@ -43,20 +44,28 @@ const SupplyForm: React.FC<SupplyFormProps> = ({ supplyToEdit, onSuccess }) => {
     setError(null);
 
     try {
+      const token = getCookie("auth_token");
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+
       if (supplyToEdit) {
         // Update existing supply
-        await axios.put(`http://127.0.0.1:8000/inventory/supplies/${supplyToEdit.id}`, formData);
+        await axios.put(`http://127.0.0.1:8000/inventory/supplies/${supplyToEdit.id}`, formData, config);
       } else {
         // Add new supply
-        await axios.post("http://127.0.0.1:8000/inventory/supplies", formData);
+        await axios.post("http://127.0.0.1:8000/inventory/supplies", formData, config);
       }
+
       onSuccess(); // Callback to refresh data or close the form
     } catch (err) {
       setError("Failed to save supply. Please try again.");
     } finally {
       setLoading(false);
     }
-  };
+  }
 
   return (
     <div className="bg-white p-6 rounded shadow-md max-w-md mx-auto">

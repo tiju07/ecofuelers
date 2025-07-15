@@ -1,6 +1,8 @@
 // FILE: UsageForm.tsx
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { getCookie } from "src/context/Services";
+
 
 interface Supply {
   id: number;
@@ -49,14 +51,22 @@ const UsageForm: React.FC<UsageFormProps> = ({ onSuccess }) => {
     setSuccess(null);
 
     try {
-      await axios.post("http://127.0.0.1:8000/inventory/usage", formData);
+      // await axios.post("http://127.0.0.1:8000/inventory/usage", formData);
+      const token = getCookie("access_token");
+      await axios.post("http://127.0.0.1:8000/inventory/usage", formData, {
+        headers: {
+          Authorization: token,
+        },
+      });
       setSuccess("Usage recorded successfully.");
       setFormData({ supply_id: "", quantity_used: 0 }); // Reset form
-      if (onSuccess) onSuccess();
+      console.log("Updated!")
+      onSuccess();
     } catch (err) {
       setError("Failed to record usage. Please try again.");
     } finally {
       setLoading(false);
+      onSuccess();
     }
   };
 

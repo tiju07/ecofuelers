@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from ..database.db import get_db
@@ -15,13 +15,23 @@ router = APIRouter()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-def require_admin(user: dict = Depends(get_current_user)):
-    if user["role"] != "admin":
+def require_admin(user: Users = Depends(get_current_user)):
+    user_role = user.role.value
+    if user_role != "admin":
         raise HTTPException(status_code=403, detail="Admin access required")
     return user
 
-def require_authenticated(user: dict = Depends(get_current_user)):
-    return user
+def require_authenticated(request: Request, user: dict = Depends(get_current_user)):
+    token = request.headers.get("Authorization")
+    if token:
+        token = token.split(" ")[1]  # Get the token part after "Bearer"
+        try:
+            payload = jwt.decode(token, "your_secret_key_here", algorithms=["HS256"])
+            return payload  # Return the decoded payload if valid
+        except JWTError:
+            raise HTTPException(status_code=403, detail="Invalid token")
+    else:
+        raise HTTPException(status_code=403, detail="Authorization header missing")
 
 
 
@@ -37,7 +47,7 @@ def login(user: UserLogin, response: Response = None):
         )
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": db_user.id, "username": db_user.username, "first_name": db_user.first_name, "last_name": db_user.last_name}, expires_delta=access_token_expires
+        data={"sub": str(db_user.id), "username": db_user.username, "first_name": db_user.first_name, "last_name": db_user.last_name}, expires_delta=access_token_expires
     )
     response.set_cookie(
         key="access_token",

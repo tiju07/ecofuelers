@@ -8,6 +8,7 @@ import { Button } from "@app/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@app/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@app/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@app/components/ui/table";
+import { getCookie } from "src/context/Services";
 
 const Inventory: React.FC = () => {
   const { user } = useAuth();
@@ -20,14 +21,28 @@ const Inventory: React.FC = () => {
   const [recommendations, setRecommendations] = useState<any[]>([]);
 
   const fetchSupplies = async () => {
+    console.log("Fetching supplies with refresh key:", refreshKey);
     setLoading(true);
     setError(null);
     try {
+      const jwtToken = getCookie("auth_token"); // Using "auth_token" as the name of your cookie
       const [suppliesRes, savingsRes, , recRes] = await Promise.all([
-        axios.get("http://127.0.0.1:8000/inventory/supplies"),
-        axios.get("http://127.0.0.1:8000/inventory/savings"),
-        axios.get("http://127.0.0.1:8000/inventory/alerts"),
-        axios.get("http://localhost:8000/inventory/recommendations"),
+        axios.get("http://127.0.0.1:8000/inventory/supplies", {
+          withCredentials: true,
+          headers: { Authorization: `Bearer ${jwtToken}` }
+        }),
+        axios.get("http://127.0.0.1:8000/inventory/savings", {
+          withCredentials: true,
+          headers: { Authorization: `Bearer ${jwtToken}` }
+        }),
+        axios.get("http://127.0.0.1:8000/inventory/alerts", {
+          withCredentials: true,
+          headers: { Authorization: `Bearer ${jwtToken}` }
+        }),
+        axios.get("http://localhost:8000/inventory/recommendations", {
+          withCredentials: true,
+          headers: { Authorization: `Bearer ${jwtToken}` }
+        }),
       ]);
 
       const totalStock = recRes.data.reduce(
@@ -99,7 +114,7 @@ const Inventory: React.FC = () => {
                 <Button className="bg-[#2E7D32] text-white" variant="primary" size="medium">View AI Recommendations</Button>
               </DialogTrigger>
               <DialogContent className="max-w-2xl">
-              <DialogHeader className="bg-white">
+                <DialogHeader className="bg-white">
                   <DialogTitle className="text-lg font-bold">AI Recommendations</DialogTitle>
                 </DialogHeader>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -159,7 +174,7 @@ const Inventory: React.FC = () => {
                 <DialogHeader className="bg-white">
                   <DialogTitle className="text-lg font-bold">Supply Form</DialogTitle>
                 </DialogHeader>
-                <SupplyForm onSuccess={fetchSupplies} />
+                <SupplyForm onSuccess={() => fetchSupplies()} />
               </DialogContent>
             </Dialog>
 
@@ -171,7 +186,7 @@ const Inventory: React.FC = () => {
                 <DialogHeader className="bg-white">
                   <DialogTitle className="text-lg font-bold">Usage Form</DialogTitle>
                 </DialogHeader>
-                <UsageForm onSuccess={triggerRefresh} />
+                <UsageForm onSuccess={() => fetchSupplies()} />
               </DialogContent>
             </Dialog>
           </div>
