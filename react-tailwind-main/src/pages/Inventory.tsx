@@ -20,7 +20,13 @@ import {
   TableHeader,
   TableRow,
 } from '@app/components/ui/table';
-import { Package, Leaf, Recycle, Lightbulb, Box, BarChart, PlusCircle, Truck } from 'lucide-react';
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from '@app/components/ui/context-menu';
+import { Package, Leaf, Recycle, Lightbulb, Box, BarChart, PlusCircle } from 'lucide-react';
 import { getCookie } from 'src/context/Services';
 import { toast } from 'sonner';
 
@@ -34,6 +40,7 @@ const Inventory: React.FC = () => {
   const [recommendations, setRecommendations] = useState<any[]>([]);
   const [savingsPercentage, setSavingsPercentage] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedSupply, setSelectedSupply] = useState<any | null>(null);
   const itemsPerPage = 4;
 
   const fetchSupplies = async (input: string) => {
@@ -54,10 +61,6 @@ const Inventory: React.FC = () => {
           withCredentials: true,
           headers: { Authorization: `Bearer ${jwtToken}` },
         }),
-        // axios.get('http://127.0.0.1:8000/inventory/alerts', {
-        //   withCredentials: true,
-        //   headers: { Authorization: `Bearer ${jwtToken}` },
-        // }),
         axios.get('http://localhost:8000/inventory/recommendations', {
           withCredentials: true,
           headers: { Authorization: `Bearer ${jwtToken}` },
@@ -89,7 +92,6 @@ const Inventory: React.FC = () => {
       let optimizedCost = 0;
 
       suppliesRes.data.forEach((supply: any) => {
-        console.log(supply);
         const recommendation = recRes.data.find((r: any) => r.supply_id === supply.id);
         const currentQty = supply.quantity || 0;
         const recommendedQty = recommendation?.recommended_order_quantity || 0;
@@ -146,14 +148,14 @@ const Inventory: React.FC = () => {
         <p className='text-center text-red-500'>{error}</p>
       ) : (
         <>
-          <h1 className='mb-6 text-center text-3xl font-bold text-[#2E7D32]'>Inventory</h1>
+          <h1 className='mb-6 text-center text-3xl font-bold text-[#2E7D32]'>Inventory 🌿</h1>
           <div className='mb-8 grid transform grid-cols-1 gap-6 transition-transform md:grid-cols-3'>
-            <Card className='flex transform flex-col items-center rounded-xl bg-white p-6 shadow-md transition-transform hover:scale-105'>
+            <Card className='animate-fade-in flex transform flex-col items-center rounded-xl bg-white p-6 shadow-md transition-transform hover:scale-105'>
               <Package className='h-12 w-12 text-[#2E7D32]' />
               <h2 className='mt-2 text-lg font-bold text-gray-800'>Total Supplies</h2>
               <p className='text-3xl font-bold text-[#2E7D32]'>{supplies?.length}</p>
             </Card>
-            <Card className='flex flex-col items-center rounded-xl bg-white p-6 shadow-md transition-transform hover:scale-105'>
+            <Card className='animate-fade-in flex flex-col items-center rounded-xl bg-white p-6 shadow-md transition-transform hover:scale-105'>
               <Leaf className='h-12 w-12 text-[#388E3C]' />
               <h2 className='mt-2 text-lg font-bold text-gray-800'>Estimated Savings</h2>
               <p className='text-3xl font-bold text-[#388E3C]'>
@@ -163,7 +165,7 @@ const Inventory: React.FC = () => {
                 Up to {savingsPercentage}% savings!
               </span>
             </Card>
-            <Card className='flex flex-col items-center rounded-xl bg-white p-6 shadow-md transition-transform hover:scale-105'>
+            <Card className='animate-fade-in flex flex-col items-center rounded-xl bg-white p-6 shadow-md transition-transform hover:scale-105'>
               <Recycle className='h-12 w-12 text-[#388E3C]' />
               <h2 className='mt-2 text-lg font-bold text-gray-800'>Waste Reduction</h2>
               <p className='text-3xl font-bold text-[#388E3C]'>{wasteReduction.toFixed(2)}%</p>
@@ -176,13 +178,17 @@ const Inventory: React.FC = () => {
             {user.role === 'admin' && (
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button className='bg-[#2E7D32] text-white' size={'sm'} variant={'default'}>
+                  <Button
+                    className='bg-[#2E7D32] text-white transition-transform duration-300 hover:scale-105 hover:bg-[#1B5E20]'
+                    size={'sm'}
+                    variant={'default'}
+                  >
                     Add/Update Supply
                   </Button>
                 </DialogTrigger>
                 <DialogContent className='max-w-lg'>
                   <DialogHeader className={''}>
-                    <DialogTitle className={''}>Supply Form</DialogTitle>
+                    {/* <DialogTitle className={''}>Supply Form</DialogTitle> */}
                   </DialogHeader>
                   <SupplyForm onSuccess={() => fetchSupplies('add_supplies')} />
                 </DialogContent>
@@ -190,7 +196,11 @@ const Inventory: React.FC = () => {
             )}
             <Dialog>
               <DialogTrigger asChild>
-                <Button className='bg-[#2E7D32] text-white' size={'sm'} variant={'default'}>
+                <Button
+                  className='bg-[#2E7D32] text-white transition-transform duration-300 hover:scale-105 hover:bg-[#1B5E20]'
+                  size={'sm'}
+                  variant={'default'}
+                >
                   Record Usage
                 </Button>
               </DialogTrigger>
@@ -203,7 +213,11 @@ const Inventory: React.FC = () => {
             </Dialog>
             <Dialog>
               <DialogTrigger asChild>
-                <Button className='bg-[#2E7D32] text-white' size={'sm'} variant={'primary'}>
+                <Button
+                  className='bg-[#2E7D32] text-white transition-transform duration-300 hover:scale-105 hover:bg-[#1B5E20]'
+                  size={'sm'}
+                  variant={'default'}
+                >
                   View AI Recommendations
                 </Button>
               </DialogTrigger>
@@ -248,11 +262,6 @@ const Inventory: React.FC = () => {
                               : 'N/A'}
                           </span>
                         </div>
-                        {/* <div className='flex items-center space-x-2'>
-                          <Truck className='h-5 w-5 text-gray-500' />
-                          <span className='text-gray-600'>Supplier:</span>
-                          <span className='text-gray-800'>{rec.supplier}</span>
-                        </div> */}
                       </CardContent>
                     </Card>
                   ))}
@@ -260,62 +269,115 @@ const Inventory: React.FC = () => {
               </DialogContent>
             </Dialog>
           </div>
-          <Card className='rounded-xl shadow-md'>
-            <CardHeader className=''>
-              <CardTitle className=''>Supplies List</CardTitle>
+          <Card className='rounded-xl border border-green-200 shadow-md'>
+            <CardHeader className={''}>
+              <CardTitle className='text-[#2E7D32]'>Supplies</CardTitle>
             </CardHeader>
-            <CardContent className=''>
+            <CardContent className={''}>
               <Table className='w-full'>
-                <TableHeader className='bg-gray-100'>
-                  <TableRow className=''>
-                    <TableHead className='text-left'>ID</TableHead>
-                    <TableHead className='text-left'>Name</TableHead>
-                    <TableHead className='text-left'>Quantity</TableHead>
+                <TableHeader className='bg-green-100'>
+                  <TableRow className={''}>
+                    {/* <TableHead className='text-left font-semibold text-[#2E7D32]'>ID</TableHead> */}
+                    <TableHead className='text-left font-semibold text-[#2E7D32]'>Item</TableHead>
+                    <TableHead className='text-left font-semibold text-[#2E7D32]'>
+                      Quantity
+                    </TableHead>
+                    <TableHead className='text-left font-semibold text-[#2E7D32]'>
+                      Supplier
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
-                <TableBody className=''>
+                <TableBody className={''}>
                   {currentSupplies.length === 0 ? (
-                    <TableRow className=''>
+                    <TableRow className={''}>
                       <TableCell colSpan={3} className='text-center text-gray-500'>
                         No supplies found.
                       </TableCell>
                     </TableRow>
                   ) : (
-                    currentSupplies.map((supply: any) => (
-                      <TableRow key={supply.id} className='hover:bg-gray-50'>
-                        <TableCell className=''>{supply.id}</TableCell>
-                        <TableCell className=''>{supply.name}</TableCell>
-                        <TableCell className=''>{supply.quantity}</TableCell>
-                      </TableRow>
-                    ))
+                    currentSupplies.map((supply: any, index: number) =>
+                      user.role === 'admin' ? (
+                        <ContextMenu key={supply.id}>
+                          <ContextMenuTrigger asChild>
+                            <TableRow
+                              className='animate-fade-in transition-colors duration-200 hover:bg-green-50'
+                              style={{ animationDelay: `${index * 0.1}s` }}
+                            >
+                              {/* <TableCell className={''}>{supply.id}</TableCell> */}
+                              <TableCell className={''}>{supply.name}</TableCell>
+                              <TableCell className={''}>{supply.quantity}</TableCell>
+                              <TableCell className={''}>{supply.primary_supplier}</TableCell>
+                            </TableRow>
+                          </ContextMenuTrigger>
+                          <ContextMenuContent className='rounded-lg border border-green-200 bg-white shadow-lg'>
+                            <ContextMenuItem
+                              onClick={() => setSelectedSupply(supply)}
+                              className='cursor-pointer px-4 py-2 text-[#2E7D32] hover:bg-green-100'
+                              inset={true}
+                            >
+                              Update Supply
+                            </ContextMenuItem>
+                          </ContextMenuContent>
+                        </ContextMenu>
+                      ) : (
+                        <TableRow
+                          key={supply.id}
+                          className='animate-fade-in transition-colors duration-200 hover:bg-green-50'
+                          style={{ animationDelay: `${index * 0.1}s` }}
+                        >
+                          {/* <TableCell className={''}>{supply.id}</TableCell> */}
+                          <TableCell className={''}>{supply.name}</TableCell>
+                          <TableCell className={''}>{supply.quantity}</TableCell>
+                          <TableCell className={''}>{supply.primary_supplier}</TableCell>
+                        </TableRow>
+                      )
+                    )
                   )}
                 </TableBody>
               </Table>
               <div className='mt-4 flex items-center justify-between'>
                 <Button
-                  size={'sm'}
-                  variant={'default'}
+                  variant={'outline'}
+                  size='sm'
                   onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
                   disabled={currentPage === 1}
-                  className=''
+                  className='bg-[#2E7D32] text-white transition-transform duration-300 hover:scale-105 hover:bg-[#1B5E20]'
                 >
                   Previous
                 </Button>
-                <span>
+                <span className='text-gray-600'>
                   Page {currentPage} of {totalPages}
                 </span>
                 <Button
-                  size={'sm'}
-                  variant={'default'}
+                  variant={'outline'}
+                  size='sm'
                   onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
                   disabled={currentPage === totalPages}
-                  className=''
+                  className='bg-[#2E7D32] text-white transition-transform duration-300 hover:scale-105 hover:bg-[#1B5E20]'
                 >
                   Next
                 </Button>
               </div>
             </CardContent>
           </Card>
+
+          {/* Update Supply Dialog */}
+          {selectedSupply && (
+            <Dialog open={!!selectedSupply} onOpenChange={() => setSelectedSupply(null)}>
+              <DialogContent className='max-w-lg'>
+                <DialogHeader className={''}>
+                  {/* <DialogTitle className='text-[#2E7D32]'>Update Supply</DialogTitle> */}
+                </DialogHeader>
+                <SupplyForm
+                  initialData={selectedSupply}
+                  onSuccess={() => {
+                    fetchSupplies('update_supplies');
+                    setSelectedSupply(null);
+                  }}
+                />
+              </DialogContent>
+            </Dialog>
+          )}
         </>
       )}
     </div>

@@ -47,7 +47,7 @@ def init_db():
                 cost_per_unit=30,
             ),
         ]
-        # session.add_all(supplies)
+        session.add_all(supplies)
 
         # Add sample users
         users = [
@@ -73,7 +73,7 @@ def init_db():
                 role="employee",
             ),
         ]
-        # session.add_all(users)
+        session.add_all(users)
 
         usage = [
             UsageHistory(supply_id=1, quantity_used=5, timestamp=datetime.now() - timedelta(days=1)),
@@ -178,7 +178,7 @@ def init_db():
             UsageHistory(supply_id=3, quantity_used=79, timestamp=datetime.now() - timedelta(days=100)),
         ]
 
-        # session.add_all(usage)
+        session.add_all(usage)
 
         # Commit changes
         session.commit()

@@ -16,8 +16,8 @@ Base.metadata.create_all(bind=engine)
 client = TestClient(app)
 
 # Mock user roles for auth context simulation
-admin_headers = {"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwidXNlcm5hbWUiOiJhbGljZSIsImZpcnN0X25hbWUiOiJBbGljZSIsImxhc3RfbmFtZSI6IlNtaXRoIiwicm9sZSI6ImFkbWluIiwiZXhwIjoxNzUyNjc0MTQ5fQ.rIPbY9brc1fdVIqCoYepYq1ECKUa6VKBiEP4qaROCEc"}
-employee_headers = {"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyIiwidXNlcm5hbWUiOiJib2IiLCJmaXJzdF9uYW1lIjoiQm9iIiwibGFzdF9uYW1lIjoiSm9obnNvbiIsInJvbGUiOiJlbXBsb3llZSIsImV4cCI6MTc1MjY3NDE4MH0.4p-o-exKmXF65inBIK1v6LqYqkTK_0GJP7BDyZFtFVA"}
+admin_headers = {"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwidXNlcm5hbWUiOiJhbGljZSIsImZpcnN0X25hbWUiOiJBbGljZSIsImxhc3RfbmFtZSI6IlNtaXRoIiwicm9sZSI6ImFkbWluIiwiZXhwIjoxNzUyNjkzNzEzfQ.CtlOYf7Sq6ufeU_4cUYTzKUNsoAaA3yBZeAkRtYUeWU"}
+employee_headers = {"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyIiwidXNlcm5hbWUiOiJib2IiLCJmaXJzdF9uYW1lIjoiQm9iIiwibGFzdF9uYW1lIjoiSm9obnNvbiIsInJvbGUiOiJlbXBsb3llZSIsImV4cCI6MTc1MjY5Mzc3MH0.8GPDt-1fgLp7IdiVaOY77V8r0vzKi_dWvrJ8hVLpZqE"}
 
 # --------- POSITIVE TEST CASES ---------
 
