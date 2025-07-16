@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from ..database.db import get_db
 from ..schemas.supply import SupplyCreate, SupplyUpdate, UsageCreate
 from ..models.supplies import Supplies, UsageHistory
-from ..routes.auth import require_admin
+from ..routes.auth import require_admin, require_authenticated
 from ..services.recommendations import (
     calculate_order_recommendation,
     detect_waste_alerts,
@@ -41,6 +41,16 @@ def list_supplies(
     db.close()
     return supplies
 
+# GET /supplies/{id}: Get supply by ID
+@router.get("/supplies/{id}", response_model=SupplyCreate)
+def get_supply_by_id(id: int):
+    db = next(get_db())
+    supply = db.query(Supplies).filter(Supplies.id == id).first()
+    db.close()
+    if not supply:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Supply not found")
+    return supply
+
 
 # POST /supplies: Add supply (admin only)
 @router.post("/supplies", response_model=SupplyCreate)
@@ -69,7 +79,7 @@ def update_supply(id: int, supply: SupplyUpdate, user: dict = Depends(require_ad
 
 # POST /usage: Record usage and update quantity
 @router.post("/usage", response_model=UsageCreate)
-def record_usage(usage: UsageCreate, user: dict = Depends(require_admin)):
+def record_usage(usage: UsageCreate, user: dict = Depends(require_authenticated)):
     try:
         db = next(get_db())
         supply = db.query(Supplies).filter(Supplies.id == usage.supply_id).first()

@@ -9,7 +9,7 @@ class SupplyBase(BaseModel):
     name: str
     category: str
     quantity: int = Field(..., ge=0, description="Quantity must be non-negative")
-    expiration_date: Optional[datetime] = None
+    expiration_date: Optional[datetime] = Field(..., ge=datetime.now(), description="Expiration date must be in the future")
     primary_supplier: Optional[str] = None
     cost_per_unit: Optional[float] = None  # New field for cost per unit
 

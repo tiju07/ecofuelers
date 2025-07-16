@@ -53,28 +53,36 @@ const ChartComponent: React.FC = () => {
     fetchData();
   }, []);
 
+  const getPeakLowPointColors = (data: number[]) => {
+    const max = Math.max(...data);
+    const min = Math.min(...data);
+    return data.map((val) => {
+      if (val === max) return '#FF5722'; // Peak - Orange
+      if (val === min) return '#2196F3'; // Low - Blue
+      return '#4CAF50'; // Default - Green
+    });
+  };
+
   const usageChartData = {
     labels: usageData?.dates || [],
     datasets: [
       {
         label: 'Supply Usage',
         data: usageData?.values || [],
-        borderColor: '#2E7D32',
-        backgroundColor: (context: any) => {
-          const ctx = context.chart.ctx;
-          const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-          gradient.addColorStop(0, 'rgba(46, 125, 50, 0.3)');
-          gradient.addColorStop(1, 'rgba(46, 125, 50, 0.1)');
-          return gradient;
-        },
+        borderColor: '#4CAF50',
+        backgroundColor: 'rgba(76, 175, 80, 0.2)',
+        pointBackgroundColor: getPeakLowPointColors(usageData?.values || []),
+        pointHoverRadius: 8,
+        pointHoverBackgroundColor: '#000000',
         fill: true,
         tension: 0.4,
-        pointBackgroundColor: '#2E7D32',
-        pointHoverRadius: 8,
-        pointHoverBackgroundColor: '#1B5E20',
       },
     ],
   };
+
+  const vibrantColors = [
+    '#4CAF50', '#FF9800', '#03A9F4', '#E91E63', '#FFC107', '#00BCD4', '#8BC34A', '#673AB7'
+  ];
 
   const savingsChartData = {
     labels: savingsData?.months || [],
@@ -82,13 +90,7 @@ const ChartComponent: React.FC = () => {
       {
         label: 'Cost Savings',
         data: savingsData?.values || [],
-        backgroundColor: (context: any) => {
-          const ctx = context.chart.ctx;
-          const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-          gradient.addColorStop(0, 'rgba(46, 125, 50, 0.6)');
-          gradient.addColorStop(1, 'rgba(46, 125, 50, 0.2)');
-          return gradient;
-        },
+        backgroundColor: "#4CAF50",
         borderColor: '#1B5E20',
         borderWidth: 1,
         hoverBackgroundColor: '#2E7D32',
@@ -131,7 +133,7 @@ const ChartComponent: React.FC = () => {
   };
 
   return (
-    <div className='grid grid-cols-1 gap-6 md:grid-cols-2'>
+    <div className='grid grid-cols-1 gap-6 md:grid-cols-1'>
       {loading ? (
         <div className='col-span-2 flex items-center justify-center gap-6'>
           <div className='w-full md:w-1/2'>
@@ -151,19 +153,13 @@ const ChartComponent: React.FC = () => {
         <p className='col-span-2 text-center text-red-500'>{error}</p>
       ) : (
         <>
-          <Card
-            className='animate-fade-in rounded-lg border border-green-200 bg-white p-4 shadow-md transition-transform duration-300 hover:scale-102 hover:shadow-lg'
-            style={{ animationDelay: '0.1s' }}
-          >
+          <Card className='animate-fade-in rounded-lg border border-green-200 bg-white p-4 shadow-md transition-transform duration-300 hover:scale-102 hover:shadow-lg'>
             <h2 className='mb-2 text-lg font-semibold text-[#2E7D32]'>Usage Trends</h2>
             <div className='h-[300px]'>
               <Line data={usageChartData} options={chartOptions} />
             </div>
           </Card>
-          <Card
-            className='animate-fade-in rounded-lg border border-green-200 bg-white p-4 shadow-md transition-transform duration-300 hover:scale-102 hover:shadow-lg'
-            style={{ animationDelay: '0.2s' }}
-          >
+          <Card className='animate-fade-in rounded-lg border border-green-200 bg-white p-4 shadow-md transition-transform duration-300 hover:scale-102 hover:shadow-lg'>
             <h2 className='mb-2 text-lg font-semibold text-[#2E7D32]'>Cost Savings</h2>
             <div className='h-[300px]'>
               <Bar data={savingsChartData} options={chartOptions} />

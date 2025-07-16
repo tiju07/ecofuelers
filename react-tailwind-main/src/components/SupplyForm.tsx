@@ -31,8 +31,8 @@ const SupplyForm: React.FC<SupplyFormProps> = ({ supplyToEdit, onSuccess }) => {
   const [error, setError] = useState<string | null>(null);
 
   if (user?.role !== 'admin') {
-      console.log(user);
-      
+    console.log(user);
+
     return <p className='text-red-500'>Access denied. Admins only.</p>;
   }
 
@@ -48,6 +48,20 @@ const SupplyForm: React.FC<SupplyFormProps> = ({ supplyToEdit, onSuccess }) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+
+    // Validate form data
+    if (!formData.name || !formData.category || formData.quantity < 0 || !formData.expiration_date) {
+      setError('Please fill in all required fields.');
+      setLoading(false);
+      return;
+    }
+
+    const currentDate = new Date().toISOString().split('T')[0]; // Get current date in YYYY-MM-DD format
+    if (formData.expiration_date <= currentDate) {
+      setError('Expiration date must be greater than the current date.');
+      setLoading(false);
+      return;
+    }
 
     try {
       const config = {
@@ -70,6 +84,7 @@ const SupplyForm: React.FC<SupplyFormProps> = ({ supplyToEdit, onSuccess }) => {
 
       onSuccess(); // Callback to refresh data or close the form
     } catch (err) {
+      console.log(err)
       setError('Failed to save supply. Please try again.');
     } finally {
       setLoading(false);

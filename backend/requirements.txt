@@ -12,3 +12,7 @@ uvicorn
 pandas
 openpyxl
 reportlab
+pytest
+pytest-cov
+httpx
+pytest-asyncio

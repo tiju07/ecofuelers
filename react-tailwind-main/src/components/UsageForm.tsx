@@ -58,7 +58,7 @@ const UsageForm: React.FC<UsageFormProps> = ({ onSuccess }) => {
           Authorization: token,
         },
       });
-      setSuccess("Usage recorded successfully.");
+      // setSuccess("Usage recorded successfully.");
       setFormData({ supply_id: "", quantity_used: 0 }); // Reset form
       console.log("Updated!")
       onSuccess();

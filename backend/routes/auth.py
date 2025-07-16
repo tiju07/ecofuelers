@@ -22,16 +22,13 @@ def require_admin(user: Users = Depends(get_current_user)):
     return user
 
 def require_authenticated(request: Request, user: dict = Depends(get_current_user)):
-    token = request.headers.get("Authorization")
-    if token:
-        token = token.split(" ")[1]  # Get the token part after "Bearer"
-        try:
-            payload = jwt.decode(token, "your_secret_key_here", algorithms=["HS256"])
-            return payload  # Return the decoded payload if valid
-        except JWTError:
-            raise HTTPException(status_code=403, detail="Invalid token")
-    else:
-        raise HTTPException(status_code=403, detail="Authorization header missing")
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return user
 
 
 

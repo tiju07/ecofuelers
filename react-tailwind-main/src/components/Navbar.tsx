@@ -23,23 +23,24 @@ const Navbar: React.FC = () => {
   const { logout, isAuthenticated } = useAuth();
 
   // Fetch user and alerts
-  useEffect(() => {
-    let ignore = false;
-
-    const fetchUser = async () => {
-      try {
-        const token = getCookie('access_token');
-        if (token) {
-          const decodedToken = JSON.parse(atob(token.split('.')[1]));
-          if (!ignore) setUser(decodedToken);
-        }
-      } catch (err) {
-        if (!ignore) setUser(null);
-      } finally {
-        if (!ignore) setLoading(false);
+  let ignore = false;
+  const fetchUser = async () => {
+    try {
+      const token = getCookie('access_token');
+      if (token) {
+        const decodedToken = JSON.parse(atob(token.split('.')[1]));
+        if (!ignore) setUser(decodedToken);
       }
-    };
-
+      else {
+        setUser(null);
+      }
+    } catch (err) {
+      if (!ignore) setUser(null);
+    } finally {
+      if (!ignore) setLoading(false);
+    }
+  };
+  useEffect(() => {
     const fetchAlerts = async () => {
       try {
         const response = await axios.get('http://localhost:8000/inventory/alerts', {
@@ -61,7 +62,9 @@ const Navbar: React.FC = () => {
 
   const handleLogout = async () => {
     logout();
+    fetchUser();
     navigate('/login');
+
   };
 
   if (loading) {
@@ -105,8 +108,7 @@ const Navbar: React.FC = () => {
           <NavLink
             to='/dashboard'
             className={({ isActive }) =>
-              `rounded px-3 py-2 font-semibold transition-transform duration-300 hover:scale-105 ${
-                isActive ? 'bg-green-100 text-[#2E7D32]' : 'text-[#2E7D32] hover:bg-green-100'
+              `rounded px-3 py-2 font-semibold transition-transform duration-300 hover:scale-105 ${isActive ? 'bg-green-100 text-[#2E7D32]' : 'text-[#2E7D32] hover:bg-green-100'
               }`
             }
           >
@@ -117,8 +119,7 @@ const Navbar: React.FC = () => {
               <NavLink
                 to='/inventory'
                 className={({ isActive }) =>
-                  `rounded px-3 py-2 font-semibold transition-transform duration-300 hover:scale-105 ${
-                    isActive ? 'bg-green-100 text-[#2E7D32]' : 'text-[#2E7D32] hover:bg-green-100'
+                  `rounded px-3 py-2 font-semibold transition-transform duration-300 hover:scale-105 ${isActive ? 'bg-green-100 text-[#2E7D32]' : 'text-[#2E7D32] hover:bg-green-100'
                   }`
                 }
               >
@@ -127,8 +128,7 @@ const Navbar: React.FC = () => {
               <NavLink
                 to='/recommendations'
                 className={({ isActive }) =>
-                  `rounded px-3 py-2 font-semibold transition-transform duration-300 hover:scale-105 ${
-                    isActive ? 'bg-green-100 text-[#2E7D32]' : 'text-[#2E7D32] hover:bg-green-100'
+                  `rounded px-3 py-2 font-semibold transition-transform duration-300 hover:scale-105 ${isActive ? 'bg-green-100 text-[#2E7D32]' : 'text-[#2E7D32] hover:bg-green-100'
                   }`
                 }
               >
@@ -137,8 +137,7 @@ const Navbar: React.FC = () => {
               <NavLink
                 to='/alerts'
                 className={({ isActive }) =>
-                  `rounded px-3 py-2 font-semibold transition-transform duration-300 hover:scale-105 ${
-                    isActive ? 'bg-green-100 text-[#2E7D32]' : 'text-[#2E7D32] hover:bg-green-100'
+                  `rounded px-3 py-2 font-semibold transition-transform duration-300 hover:scale-105 ${isActive ? 'bg-green-100 text-[#2E7D32]' : 'text-[#2E7D32] hover:bg-green-100'
                   }`
                 }
               >
@@ -147,8 +146,7 @@ const Navbar: React.FC = () => {
               <NavLink
                 to='/reports'
                 className={({ isActive }) =>
-                  `rounded px-3 py-2 font-semibold transition-transform duration-300 hover:scale-105 ${
-                    isActive ? 'bg-green-100 text-[#2E7D32]' : 'text-[#2E7D32] hover:bg-green-100'
+                  `rounded px-3 py-2 font-semibold transition-transform duration-300 hover:scale-105 ${isActive ? 'bg-green-100 text-[#2E7D32]' : 'text-[#2E7D32] hover:bg-green-100'
                   }`
                 }
               >
@@ -241,10 +239,9 @@ const Navbar: React.FC = () => {
               <NavLink
                 to='/login'
                 className={({ isActive }) =>
-                  `rounded px-4 py-2 font-semibold transition-transform duration-300 hover:scale-105 ${
-                    isActive
-                      ? 'bg-green-100 text-[#2E7D32]'
-                      : 'bg-white text-[#2E7D32] hover:bg-green-100'
+                  `rounded px-4 py-2 font-semibold transition-transform duration-300 hover:scale-105 ${isActive
+                    ? 'bg-green-100 text-[#2E7D32]'
+                    : 'bg-white text-[#2E7D32] hover:bg-green-100'
                   }`
                 }
               >
@@ -253,10 +250,9 @@ const Navbar: React.FC = () => {
               <NavLink
                 to='/register'
                 className={({ isActive }) =>
-                  `rounded px-4 py-2 font-semibold transition-transform duration-300 hover:scale-105 ${
-                    isActive
-                      ? 'bg-green-100 text-[#2E7D32]'
-                      : 'bg-white text-[#2E7D32] hover:bg-green-100'
+                  `rounded px-4 py-2 font-semibold transition-transform duration-300 hover:scale-105 ${isActive
+                    ? 'bg-green-100 text-[#2E7D32]'
+                    : 'bg-white text-[#2E7D32] hover:bg-green-100'
                   }`
                 }
               >

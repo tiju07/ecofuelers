@@ -112,10 +112,10 @@ const App = () => {
           richColors
           closeButton={false}
           toastOptions={{
-            className: 'bg-[#2E7D32] text-white',
             style: {
-              backgroundColor: '#2E7D32',
-              color: 'white',
+              backgroundColor: 'white',
+              color: '#2E7D32',
+              border: 'none'
             },
           }}
         />

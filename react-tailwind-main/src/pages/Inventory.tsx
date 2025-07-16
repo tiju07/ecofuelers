@@ -45,7 +45,7 @@ const Inventory: React.FC = () => {
     setError(null);
     try {
       const jwtToken = getCookie('auth_token');
-      const [suppliesRes, savingsRes, , recRes] = await Promise.all([
+      const [suppliesRes, savingsRes, recRes] = await Promise.all([
         axios.get('http://127.0.0.1:8000/inventory/supplies', {
           withCredentials: true,
           headers: { Authorization: `Bearer ${jwtToken}` },
@@ -54,10 +54,10 @@ const Inventory: React.FC = () => {
           withCredentials: true,
           headers: { Authorization: `Bearer ${jwtToken}` },
         }),
-        axios.get('http://127.0.0.1:8000/inventory/alerts', {
-          withCredentials: true,
-          headers: { Authorization: `Bearer ${jwtToken}` },
-        }),
+        // axios.get('http://127.0.0.1:8000/inventory/alerts', {
+        //   withCredentials: true,
+        //   headers: { Authorization: `Bearer ${jwtToken}` },
+        // }),
         axios.get('http://localhost:8000/inventory/recommendations', {
           withCredentials: true,
           headers: { Authorization: `Bearer ${jwtToken}` },

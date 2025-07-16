@@ -68,7 +68,7 @@ const RecommendationPage: React.FC = () => {
                     <PlusCircle className='h-5 w-5 text-[#2E7D32]' />
                     <span className='text-gray-600'>Recommended Order:</span>
                     <span className='font-bold text-[#2E7D32]'>
-                      {rec.recommended_order_quantity ? rec.recommended_order_quantity : 'N/A'}
+                      {rec.recommended_order_quantity ? Math.round(rec.recommended_order_quantity) : 'N/A'}
                     </span>
                   </div>
                   <div>

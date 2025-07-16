@@ -129,6 +129,14 @@ def detect_waste_alerts(db: Session):
                 "alert": "Overstocking",
                 "quantity": supply.quantity,
             })
+        # ✅ Check for low stock
+        elif supply.quantity < threshold:
+            alerts.append({
+                "supply_id": supply.id,
+                "name": supply.name,
+                "alert": "Low stock",
+                "quantity": supply.quantity,
+            })
 
         # ✅ Check for expiration, but filter based on usage rate
         if supply.expiration_date and supply.expiration_date <= now + timedelta(days=nearing_expiration_days):
