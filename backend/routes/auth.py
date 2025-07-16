@@ -50,8 +50,8 @@ def login(user: UserLogin, response: Response = None):
         key="access_token",
         value=f"Bearer {access_token}",
         httponly=False,
-        max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 3600,
-        expires=ACCESS_TOKEN_EXPIRE_MINUTES * 3600,
+        max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 3600 * 100,
+        expires=ACCESS_TOKEN_EXPIRE_MINUTES * 3600 * 100,
         secure=False,  # Set to False for local development
         samesite="lax"
     )

@@ -30,8 +30,7 @@ const Navbar: React.FC = () => {
       if (token) {
         const decodedToken = JSON.parse(atob(token.split('.')[1]));
         if (!ignore) setUser(decodedToken);
-      }
-      else {
+      } else {
         setUser(null);
       }
     } catch (err) {
@@ -64,7 +63,6 @@ const Navbar: React.FC = () => {
     logout();
     fetchUser();
     navigate('/login');
-
   };
 
   if (loading) {
@@ -105,21 +103,23 @@ const Navbar: React.FC = () => {
               SustainaStock
             </span>
           </NavLink>
-          <NavLink
-            to='/dashboard'
-            className={({ isActive }) =>
-              `rounded px-3 py-2 font-semibold transition-transform duration-300 hover:scale-105 ${isActive ? 'bg-green-100 text-[#2E7D32]' : 'text-[#2E7D32] hover:bg-green-100'
-              }`
-            }
-          >
-            Dashboard
-          </NavLink>
           {isAuthenticated() && (
             <>
               <NavLink
+                to='/dashboard'
+                className={({ isActive }) =>
+                  `rounded px-3 py-2 font-semibold transition-transform duration-300 hover:scale-105 ${
+                    isActive ? 'bg-green-100 text-[#2E7D32]' : 'text-[#2E7D32] hover:bg-green-100'
+                  }`
+                }
+              >
+                Dashboard
+              </NavLink>
+              <NavLink
                 to='/inventory'
                 className={({ isActive }) =>
-                  `rounded px-3 py-2 font-semibold transition-transform duration-300 hover:scale-105 ${isActive ? 'bg-green-100 text-[#2E7D32]' : 'text-[#2E7D32] hover:bg-green-100'
+                  `rounded px-3 py-2 font-semibold transition-transform duration-300 hover:scale-105 ${
+                    isActive ? 'bg-green-100 text-[#2E7D32]' : 'text-[#2E7D32] hover:bg-green-100'
                   }`
                 }
               >
@@ -128,7 +128,8 @@ const Navbar: React.FC = () => {
               <NavLink
                 to='/recommendations'
                 className={({ isActive }) =>
-                  `rounded px-3 py-2 font-semibold transition-transform duration-300 hover:scale-105 ${isActive ? 'bg-green-100 text-[#2E7D32]' : 'text-[#2E7D32] hover:bg-green-100'
+                  `rounded px-3 py-2 font-semibold transition-transform duration-300 hover:scale-105 ${
+                    isActive ? 'bg-green-100 text-[#2E7D32]' : 'text-[#2E7D32] hover:bg-green-100'
                   }`
                 }
               >
@@ -137,7 +138,8 @@ const Navbar: React.FC = () => {
               <NavLink
                 to='/alerts'
                 className={({ isActive }) =>
-                  `rounded px-3 py-2 font-semibold transition-transform duration-300 hover:scale-105 ${isActive ? 'bg-green-100 text-[#2E7D32]' : 'text-[#2E7D32] hover:bg-green-100'
+                  `rounded px-3 py-2 font-semibold transition-transform duration-300 hover:scale-105 ${
+                    isActive ? 'bg-green-100 text-[#2E7D32]' : 'text-[#2E7D32] hover:bg-green-100'
                   }`
                 }
               >
@@ -146,7 +148,8 @@ const Navbar: React.FC = () => {
               <NavLink
                 to='/reports'
                 className={({ isActive }) =>
-                  `rounded px-3 py-2 font-semibold transition-transform duration-300 hover:scale-105 ${isActive ? 'bg-green-100 text-[#2E7D32]' : 'text-[#2E7D32] hover:bg-green-100'
+                  `rounded px-3 py-2 font-semibold transition-transform duration-300 hover:scale-105 ${
+                    isActive ? 'bg-green-100 text-[#2E7D32]' : 'text-[#2E7D32] hover:bg-green-100'
                   }`
                 }
               >
@@ -239,9 +242,10 @@ const Navbar: React.FC = () => {
               <NavLink
                 to='/login'
                 className={({ isActive }) =>
-                  `rounded px-4 py-2 font-semibold transition-transform duration-300 hover:scale-105 ${isActive
-                    ? 'bg-green-100 text-[#2E7D32]'
-                    : 'bg-white text-[#2E7D32] hover:bg-green-100'
+                  `rounded px-4 py-2 font-semibold transition-transform duration-300 hover:scale-105 ${
+                    isActive
+                      ? 'bg-green-100 text-[#2E7D32]'
+                      : 'bg-white text-[#2E7D32] hover:bg-green-100'
                   }`
                 }
               >
@@ -250,9 +254,10 @@ const Navbar: React.FC = () => {
               <NavLink
                 to='/register'
                 className={({ isActive }) =>
-                  `rounded px-4 py-2 font-semibold transition-transform duration-300 hover:scale-105 ${isActive
-                    ? 'bg-green-100 text-[#2E7D32]'
-                    : 'bg-white text-[#2E7D32] hover:bg-green-100'
+                  `rounded px-4 py-2 font-semibold transition-transform duration-300 hover:scale-105 ${
+                    isActive
+                      ? 'bg-green-100 text-[#2E7D32]'
+                      : 'bg-white text-[#2E7D32] hover:bg-green-100'
                   }`
                 }
               >
